@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+const (
+	titlePrefix       = "Title: "
+	descriptionPrefix = "Description: "
+	tagsPrefix        = "Tags: "
+)
+
 type Post struct {
 	Title       string
 	Description string
@@ -23,8 +29,8 @@ func newPost(blogFile io.Reader) Post {
 	}
 
 	return Post{
-		Title:       readLine("Title: "),
-		Description: readLine("Description: "),
-		Tags:        strings.Split(readLine("Tags: "), ", "),
+		Title:       readLine(titlePrefix),
+		Description: readLine(descriptionPrefix),
+		Tags:        strings.Split(readLine(tagsPrefix), ", "),
 	}
 }
