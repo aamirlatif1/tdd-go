@@ -3,16 +3,19 @@ package blogpost_test
 import (
 	"errors"
 	"io/fs"
+	"reflect"
 	"tdd-go/blogpost"
 	"testing"
 	"testing/fstest"
 )
 
-func TestBlogPost(t *testing.T) {
+func TestBlogPostFromFS(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		// Given
 		fs := fstest.MapFS{
-			"hello-workd.md": {Data: []byte("Title: Hello, TDD world!")},
+			"hello-workd.md": {Data: []byte(`Title: Hello, TDD world!
+			Description: lol
+			Tags: tdd, go`)},
 		}
 		// When
 		posts, err := blogpost.PostsFromFS(fs)
@@ -22,14 +25,12 @@ func TestBlogPost(t *testing.T) {
 		}
 
 		// Then
-		if len(posts) != len(fs) {
-			t.Errorf("expected %d posts, got %d posts", len(posts), len(fs))
-		}
-
-		expectedFirstPOst := blogpost.Post{Title: "Hello, TDD world!"}
-		if posts[0] != expectedFirstPOst {
-			t.Errorf("got %#v, want %#v", posts[0], expectedFirstPOst)
-		}
+		assertEqual(t, len(fs), len(posts), "post size")
+		assertEqual(t, blogpost.Post{
+			Title:       "Hello, TDD world!",
+			Description: "lol",
+			Tags:        []string{"tdd", "go"}},
+			posts[0], "post")
 	})
 
 	t.Run("failing fs", func(t *testing.T) {
@@ -39,6 +40,17 @@ func TestBlogPost(t *testing.T) {
 		}
 	})
 
+}
+
+func assertEqual(t *testing.T, expected, actual interface{}, descs ...string) {
+	desc := ""
+	if len(descs) > 0 {
+		desc = descs[0] + " "
+	}
+	t.Helper()
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("%sexpected: %#v, actual: %#v", desc, expected, actual)
+	}
 }
 
 type FailingFS struct {
